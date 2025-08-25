@@ -7,15 +7,15 @@ DB = "rrhh.db"
 
 # Crear tabla si no existe
 def init_db():
-    conn = sqlite3.connect(DB)
+    conn = sqlite3.connect("data.db")
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS trabajadores (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    nombre TEXT,
-                    dni TEXT,
-                    area TEXT,
-                    cargo TEXT,
-                    estado TEXT
+                    nombre TEXT NOT NULL,
+                    dni TEXT NOT NULL,
+                    area TEXT NOT NULL,
+                    cargo TEXT NOT NULL,
+                    estado TEXT NOT NULL
                 )''')
     conn.commit()
     conn.close()
@@ -56,4 +56,5 @@ def eliminar(id):
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
+
 
