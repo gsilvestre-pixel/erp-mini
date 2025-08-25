@@ -1,34 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Mini ERP RRHH</title>
+    <meta charset="UTF-8">
+    <title>Mini ERP</title>
 </head>
 <body>
-    <h1>Trabajadores</h1>
-    <form action="/agregar" method="post">
-        Nombre: <input type="text" name="nombre">
-        DNI: <input type="text" name="dni">
-        Área: <input type="text" name="area">
-        Cargo: <input type="text" name="cargo">
-        Estado: <input type="text" name="estado">
-        <button type="submit">Agregar</button>
-    </form>
-
-    <table border="1">
-        <tr>
-            <th>ID</th><th>Nombre</th><th>DNI</th><th>Área</th><th>Cargo</th><th>Estado</th><th>Acciones</th>
-        </tr>
-        {% for t in trabajadores %}
-        <tr>
-            <td>{{ t[0] }}</td>
-            <td>{{ t[1] }}</td>
-            <td>{{ t[2] }}</td>
-            <td>{{ t[3] }}</td>
-            <td>{{ t[4] }}</td>
-            <td>{{ t[5] }}</td>
-            <td><a href="/eliminar/{{ t[0] }}">Eliminar</a></td>
-        </tr>
-        {% endfor %}
-    </table>
+    <h1>✅ Hola! Flask en Render funciona 🎉</h1>
+    <p>Ya estás viendo tu aplicación en la nube.</p>
 </body>
 </html>
