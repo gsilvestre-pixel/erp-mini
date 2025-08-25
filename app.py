@@ -20,7 +20,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-@app.route("/")
+@app.route("/", methods=["GET", "HEAD"])
 def index():
     conn = sqlite3.connect(DB)
     c = conn.cursor()
@@ -56,3 +56,4 @@ def eliminar(id):
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
+
