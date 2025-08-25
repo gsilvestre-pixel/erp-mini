@@ -27,7 +27,7 @@ def index():
     c.execute("SELECT * FROM trabajadores")
     trabajadores = c.fetchall()
     conn.close()
-    return render_template("index.html", trabajadores=trabajadores)
+    return render_template("index.html")
 
 @app.route("/agregar", methods=["POST"])
 def agregar():
@@ -56,5 +56,6 @@ def eliminar(id):
 if __name__ == "__main__":
     init_db()
     app.run(debug=True)
+
 
 
