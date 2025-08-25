@@ -2,10 +2,47 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mini ERP</title>
+    <title>Gestión de Trabajadores</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 30px; }
+        h1 { color: #2c3e50; }
+        form { margin-bottom: 20px; }
+        label { display: block; margin-top: 10px; }
+        input, button { padding: 8px; margin-top: 5px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+    </style>
 </head>
 <body>
-    <h1>✅ Hola! Flask en Render funciona 🎉</h1>
-    <p>Ya estás viendo tu aplicación en la nube.</p>
+    <h1>Gestión de Trabajadores</h1>
+
+    <!-- Formulario para agregar trabajadores -->
+    <form action="/agregar" method="post">
+        <label for="nombre">Nombre:</label>
+        <input type="text" id="nombre" name="nombre" required>
+
+        <label for="puesto">Puesto:</label>
+        <input type="text" id="puesto" name="puesto" required>
+
+        <button type="submit">Agregar Trabajador</button>
+    </form>
+
+    <!-- Tabla de trabajadores -->
+    <h2>Lista de trabajadores</h2>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Puesto</th>
+        </tr>
+        {% for t in trabajadores %}
+        <tr>
+            <td>{{ t[0] }}</td>
+            <td>{{ t[1] }}</td>
+            <td>{{ t[2] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
 </body>
 </html>
