@@ -1,9 +1,12 @@
-from flask import Flask, render_template, request, redirect, send_file
+from flask import Flask, render_template, request, redirect, send_file, abort
 import sqlite3
 import openpyxl
 import io
 
 app = Flask(__name__)
+# ▼▼▼ NUEVO: opciones fijas para el desplegable ▼▼▼
+PROYECTOS = ("Rio La Leche", "Rio Motupe", "Rio Huaura")
+# ▲▲▲
 
 DB_NAME = "RRHH.db"
 
@@ -40,13 +43,16 @@ def index():
     c.execute("SELECT * FROM trabajadores")
     trabajadores = c.fetchall()
     conn.close()
-    return render_template("index.html", trabajadores=trabajadores)
+    return render_template("index.html", trabajadores=trabajadores, PROYECTOS=PROYECTOS)
 
 @app.route("/agregar", methods=["POST"])
 def agregar():
     nombre = request.form["nombre"]
     puesto = request.form["puesto"]
-    proyecto = request.form["proyecto"]
+    proyecto = (request.form["proyecto"] or "").strip()
+    # Valida que "proyecto" sea uno de los 3 permitidos:
+    if proyecto not in PROYECTOS:
+    abort(400, description="Proyecto inválido")
     
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -85,5 +91,6 @@ def exportar():
     return send_file(output, as_attachment=True,
                      download_name="trabajadores.xlsx",
                      mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
 
 
