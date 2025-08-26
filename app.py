@@ -20,7 +20,18 @@ def init_db():
     conn.commit()
     conn.close()
 
+def ensure_column():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("PRAGMA table_info(trabajadores)")
+    columnas = [col[1] for col in c.fetchall()]
+    if "proyecto" not in columnas:
+        c.execute("ALTER TABLE trabajadores ADD COLUMN proyecto TEXT")
+        conn.commit()
+    conn.close()
+
 init_db()
+ensure_column()
 
 @app.route("/", methods=["GET"])
 def index():
@@ -35,10 +46,11 @@ def index():
 def agregar():
     nombre = request.form["nombre"]
     puesto = request.form["puesto"]
-
+    proyecto = request.form["proyecto"]
+    
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("INSERT INTO trabajadores (nombre, puesto) VALUES (?, ?)", (nombre, puesto))
+    c.execute("INSERT INTO trabajadores (nombre, puesto, proyecto) VALUES (?, ?)", (nombre, puesto, proyecto))
     conn.commit()
     conn.close()
 
@@ -59,7 +71,7 @@ def exportar():
     ws.title = "Trabajadores"
 
     # Encabezados
-    ws.append(["ID", "Nombre", "Puesto"])
+    ws.append(["ID", "Nombre", "Puesto","Proyecto"])
 
     # Datos
     for t in trabajadores:
@@ -73,3 +85,4 @@ def exportar():
     return send_file(output, as_attachment=True,
                      download_name="trabajadores.xlsx",
                      mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
