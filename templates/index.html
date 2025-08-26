@@ -24,7 +24,10 @@
 
         <label for="puesto">Puesto:</label>
         <input type="text" id="puesto" name="puesto" required>
-
+        
+        <label for="proyecto">Proyecto:</label>
+        <input type="text" id="proyecto" name="proyecto" required>
+                
         <button type="submit">Agregar Trabajador</button>
     </form>
 
@@ -35,12 +38,14 @@
             <th>ID</th>
             <th>Nombre</th>
             <th>Puesto</th>
+            <th>Proyecto</th>
         </tr>
         {% for t in trabajadores %}
         <tr>
             <td>{{ t[0] }}</td>
             <td>{{ t[1] }}</td>
             <td>{{ t[2] }}</td>
+            <td>{{ t[3] }}</td>
         </tr>
         {% endfor %}
     </table>
@@ -49,3 +54,4 @@
 <a href="/exportar">
     <button>📤 Exportar a Excel</button>
 </a>
+
