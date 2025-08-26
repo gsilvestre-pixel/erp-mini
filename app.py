@@ -24,15 +24,19 @@ def init_db():
     conn.close()
 
 def ensure_column():
-    conn = sqlite3.connect(DB_NAME)
-    c = conn.cursor()
-    c.execute("PRAGMA table_info(trabajadores)")
-    columnas = [col[1] for col in c.fetchall()]
-    if "proyecto" not in columnas:
-        c.execute("ALTER TABLE trabajadores ADD COLUMN proyecto TEXT")
-        conn.commit()
-    conn.close()
+    with sqlite3.connect(DB_NAME) as conn:
+        c = conn.cursor()
+        c.execute("PRAGMA table_info(trabajadores)")
+        columnas = [col[1] for col in c.fetchall()]
+        if "proyecto" in columnas:
+            return
 
+        try:
+            c.execute("ALTER TABLE trabajadores ADD COLUMN proyecto TEXT DEFAULT ''")
+        except sqlite3.OperationalError as e:
+            # Si otro worker ya la creó, ignora; si es otro error, relanza
+            if "duplicate column name" not in str(e).lower():
+                raise
 init_db()
 ensure_column()
 
@@ -47,12 +51,12 @@ def index():
 
 @app.route("/agregar", methods=["POST"])
 def agregar():
-    nombre = request.form["nombre"]
-    puesto = request.form["puesto"]
-    proyecto = (request.form["proyecto"] or "").strip()
+    nombre = (request.form.get("nombre") or "").strip()
+    puesto  = (request.form.get("puesto")  or "").strip()
+    proyecto = (request.form.get("proyecto") or "").strip()
     # Valida que "proyecto" sea uno de los 3 permitidos:
     if proyecto not in PROYECTOS:
-    abort(400, description="Proyecto inválido")
+        abort(400, description="Proyecto inválido")
     
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
@@ -91,6 +95,7 @@ def exportar():
     return send_file(output, as_attachment=True,
                      download_name="trabajadores.xlsx",
                      mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
 
 
 
