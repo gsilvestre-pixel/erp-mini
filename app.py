@@ -50,7 +50,7 @@ def agregar():
     
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("INSERT INTO trabajadores (nombre, puesto, proyecto) VALUES (?, ?)", (nombre, puesto, proyecto))
+    c.execute("INSERT INTO trabajadores (nombre, puesto, proyecto) VALUES (?, ?, ?)", (nombre, puesto, proyecto))
     conn.commit()
     conn.close()
 
@@ -85,4 +85,5 @@ def exportar():
     return send_file(output, as_attachment=True,
                      download_name="trabajadores.xlsx",
                      mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
 
