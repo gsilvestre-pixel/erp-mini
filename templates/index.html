@@ -27,11 +27,11 @@
         
         <label for="proyecto">Proyecto:</label>
         <select id="proyecto" name="proyecto" required>
-    <option value="" disabled selected>Selecciona un proyecto…</option>
-    {% for p in PROYECTOS %}
-      <option value="{{ p }}">{{ p }}</option>
-    {% endfor %}
-</select>
+          <option value="" disabled selected>Selecciona un proyecto…</option>
+          {% for p in PROYECTOS %}
+            <option value="{{ p }}">{{ p }}</option>
+          {% endfor %}
+        </select>
                 
         <button type="submit">Agregar Trabajador</button>
     </form>
@@ -60,5 +60,6 @@
     </table>
 </body>
 </html>
+
 
 
