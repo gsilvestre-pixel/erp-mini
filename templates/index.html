@@ -40,6 +40,53 @@
     <button type="submit">📤 Exportar a Excel</button>
 </form>
 
+    <button onclick="showPredictions()" style="margin-top: 10px; padding: 8px;">🔮 Predecir Asignaciones</button>
+    
+    <div id="predictions" style="display: none; margin-top: 20px; padding: 15px; background: #f0f8ff; border: 1px solid #4a90e2; border-radius: 5px;">
+        <h3>Predicciones de Asignación de Trabajadores</h3>
+        <div id="predictions-content"></div>
+    </div>
+
+    <script>
+    function showPredictions() {
+        fetch('/predict')
+            .then(response => response.json())
+            .then(data => {
+                let html = '<h4>Balance de Proyectos</h4><table style="width: 100%; margin-bottom: 20px;"><tr><th>Proyecto</th><th>Trabajadores</th><th>Diferencia vs Promedio</th><th>Estado</th></tr>';
+                
+                data.balance_proyectos.forEach(p => {
+                    let color = p.estado === 'sobrecargado' ? '#ffcccc' : (p.estado === 'balanceado' ? '#ccffcc' : '#ffffcc');
+                    html += `<tr style="background: ${color}"><td>${p.proyecto}</td><td>${p.trabajadores_actuales}</td><td>${p.diferencia > 0 ? '+' : ''}${p.diferencia}</td><td>${p.estado}</td></tr>`;
+                });
+                html += '</table>';
+                
+                if (data.sugerencias_asignacion.length > 0) {
+                    html += '<h4>Sugerencias de Asignación</h4><ul>';
+                    data.sugerencias_asignacion.forEach(s => {
+                        html += `<li><strong>${s.trabajador}</strong> (${s.puesto}): ${s.accion} a <strong>${s.proyecto_sugerido}</strong><br><em>Razón: ${s.razon}</em></li>`;
+                    });
+                    html += '</ul>';
+                }
+                
+                if (data.necesidades_por_puesto.length > 0) {
+                    html += '<h4>Distribución de Puestos por Proyecto</h4><table style="width: 100%;"><tr><th>Proyecto</th><th>Puestos</th><th>Total</th></tr>';
+                    data.necesidades_por_puesto.forEach(n => {
+                        let puestos = Object.entries(n.puestos).map(([k, v]) => `${k}: ${v}`).join(', ');
+                        html += `<tr><td>${n.proyecto}</td><td>${puestos}</td><td>${n.total}</td></tr>`;
+                    });
+                    html += '</table>';
+                }
+                
+                document.getElementById('predictions-content').innerHTML = html;
+                document.getElementById('predictions').style.display = 'block';
+            })
+            .catch(error => {
+                document.getElementById('predictions-content').innerHTML = '<p style="color: red;">Error al cargar predicciones</p>';
+                document.getElementById('predictions').style.display = 'block';
+            });
+    }
+    </script>
+
     <!-- Tabla de trabajadores -->
     <h2>Lista de trabajadores</h2>
     <table>

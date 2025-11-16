@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, redirect, send_file, abort
+from flask import Flask, render_template, request, redirect, send_file, abort, jsonify
 import sqlite3
 import openpyxl
 import io
+from collections import defaultdict, Counter
 
 app = Flask(__name__)
 # ▼▼▼ NUEVO: opciones fijas para el desplegable ▼▼▼
@@ -95,6 +96,78 @@ def exportar():
     return send_file(output, as_attachment=True,
                      download_name="trabajadores.xlsx",
                      mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+# 🔮 Nueva ruta: predecir asignaciones óptimas (trading predictions)
+@app.route("/predict", methods=["GET"])
+def predict_trading():
+    conn = sqlite3.connect(DB_NAME)
+    c = conn.cursor()
+    c.execute("SELECT id, nombre, puesto, proyecto FROM trabajadores")
+    trabajadores = c.fetchall()
+    conn.close()
+    
+    # Analizar distribución actual
+    project_counts = Counter()
+    position_by_project = defaultdict(lambda: defaultdict(int))
+    
+    for t in trabajadores:
+        worker_id, nombre, puesto, proyecto = t
+        if proyecto:
+            project_counts[proyecto] += 1
+            position_by_project[proyecto][puesto] += 1
+    
+    # Calcular predicciones/sugerencias
+    predictions = []
+    
+    # 1. Identificar desbalances de proyectos
+    if len(project_counts) > 0:
+        avg_workers = sum(project_counts.values()) / len(PROYECTOS)
+        for proyecto in PROYECTOS:
+            count = project_counts.get(proyecto, 0)
+            balance = count - avg_workers
+            predictions.append({
+                'tipo': 'balance',
+                'proyecto': proyecto,
+                'trabajadores_actuales': count,
+                'diferencia': round(balance, 1),
+                'estado': 'sobrecargado' if balance > 1 else ('balanceado' if abs(balance) <= 1 else 'necesita_mas')
+            })
+    
+    # 2. Sugerir redistribuciones específicas
+    suggestions = []
+    for t in trabajadores:
+        worker_id, nombre, puesto, proyecto = t
+        if not proyecto:
+            # Sugerir proyecto para trabajadores sin asignación
+            # Asignar al proyecto con menos trabajadores
+            min_project = min(PROYECTOS, key=lambda p: project_counts.get(p, 0))
+            suggestions.append({
+                'trabajador': nombre,
+                'puesto': puesto,
+                'accion': 'asignar',
+                'proyecto_sugerido': min_project,
+                'razon': f'Proyecto con menor carga actual ({project_counts.get(min_project, 0)} trabajadores)'
+            })
+    
+    # 3. Identificar necesidades por tipo de puesto
+    position_needs = []
+    for proyecto in PROYECTOS:
+        positions = position_by_project[proyecto]
+        total = project_counts.get(proyecto, 0)
+        if total > 0:
+            position_needs.append({
+                'proyecto': proyecto,
+                'puestos': dict(positions),
+                'total': total
+            })
+    
+    return jsonify({
+        'balance_proyectos': predictions,
+        'sugerencias_asignacion': suggestions,
+        'necesidades_por_puesto': position_needs,
+        'total_trabajadores': len(trabajadores),
+        'proyectos': list(PROYECTOS)
+    })
 
 
 
