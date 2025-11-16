@@ -12,13 +12,15 @@
         table { border-collapse: collapse; width: 100%; margin-top: 20px; }
         th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
         th { background-color: #f4f4f4; }
+        .img-thumbnail { max-width: 50px; max-height: 50px; cursor: pointer; }
+        .no-image { color: #999; font-style: italic; }
     </style>
 </head>
 <body>
     <h1>Gestión de Trabajadores</h1>
 
     <!-- Formulario para agregar trabajadores -->
-    <form action="/agregar" method="post">
+    <form action="/agregar" method="post" enctype="multipart/form-data">
         <label for="nombre">Nombre:</label>
         <input type="text" id="nombre" name="nombre" required>
 
@@ -32,6 +34,9 @@
             <option value="{{ p }}">{{ p }}</option>
           {% endfor %}
         </select>
+        
+        <label for="imagen">Imagen (Opcional):</label>
+        <input type="file" id="imagen" name="imagen" accept="image/*,.pdf">
                 
         <button type="submit">Agregar Trabajador</button>
     </form>
@@ -48,6 +53,7 @@
             <th>Nombre</th>
             <th>Puesto</th>
             <th>Proyecto</th>
+            <th>Imagen</th>
         </tr>
         {% for t in trabajadores %}
         <tr>
@@ -55,6 +61,18 @@
             <td>{{ t[1] }}</td>
             <td>{{ t[2] }}</td>
             <td>{{ t[3] }}</td>
+            <td>
+                {% if t[4] %}
+                    <a href="{{ url_for('static', filename='uploads/' + t[4]) }}" target="_blank">
+                        <img src="{{ url_for('static', filename='uploads/' + t[4]) }}" 
+                             alt="Imagen de {{ t[1] }}" 
+                             class="img-thumbnail"
+                             onerror="this.onerror=null; this.parentElement.innerHTML='📄 Ver archivo';">
+                    </a>
+                {% else %}
+                    <span class="no-image">Sin imagen</span>
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </table>
