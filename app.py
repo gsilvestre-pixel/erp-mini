@@ -1,14 +1,22 @@
-from flask import Flask, render_template, request, redirect, send_file, abort
+from flask import Flask, render_template, request, redirect, send_file, abort, url_for
 import sqlite3
 import openpyxl
 import io
+import os
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = 'static/uploads'
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 # ▼▼▼ NUEVO: opciones fijas para el desplegable ▼▼▼
 PROYECTOS = ("Rio La Leche", "Rio Motupe", "Rio Huaura")
 # ▲▲▲
 
 DB_NAME = "RRHH.db"
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def init_db():
     conn = sqlite3.connect(DB_NAME)
@@ -96,6 +104,60 @@ def exportar():
                      download_name="trabajadores.xlsx",
                      mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 
+# 🎨 Nueva ruta: página de diseño artístico
+@app.route("/diseno", methods=["GET"])
+def diseno():
+    # Obtener la última imagen subida
+    uploaded_image = None
+    if os.path.exists(app.config['UPLOAD_FOLDER']):
+        files = [f for f in os.listdir(app.config['UPLOAD_FOLDER']) if allowed_file(f)]
+        if files:
+            # Obtener el archivo más reciente
+            files.sort(key=lambda x: os.path.getmtime(os.path.join(app.config['UPLOAD_FOLDER'], x)), reverse=True)
+            uploaded_image = files[0]
+    
+    # Propuestas de siluetas
+    siluetas = [
+        {"nombre": "Deportiva Clásica", "descripcion": "Silueta aerodinámica con líneas fluidas"},
+        {"nombre": "Urbana Minimalista", "descripcion": "Diseño limpio y elegante para uso diario"},
+        {"nombre": "Alta Performance", "descripcion": "Silueta técnica optimizada para rendimiento"},
+        {"nombre": "Casual Elegante", "descripcion": "Equilibrio entre comodidad y estilo"},
+    ]
+    
+    # Propuestas de suelas
+    suelas = [
+        {"nombre": "Tracción Deportiva", "descripcion": "Patrón con hexágonos para máximo agarre"},
+        {"nombre": "Comfort Plus", "descripcion": "Suela acolchada con amortiguación avanzada"},
+        {"nombre": "Urbana Plana", "descripcion": "Diseño minimalista para superficies lisas"},
+        {"nombre": "Todo Terreno", "descripcion": "Patrón agresivo para múltiples superficies"},
+    ]
+    
+    return render_template("diseno.html", 
+                         uploaded_image=uploaded_image,
+                         siluetas=siluetas,
+                         suelas=suelas)
+
+# 🎨 Nueva ruta: subir imagen artística
+@app.route("/subir_imagen", methods=["POST"])
+def subir_imagen():
+    if 'imagen' not in request.files:
+        return redirect(url_for('diseno'))
+    
+    file = request.files['imagen']
+    if file.filename == '':
+        return redirect(url_for('diseno'))
+    
+    if file and allowed_file(file.filename):
+        # Crear carpeta si no existe
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        
+        # Guardar archivo con nombre seguro
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    
+    return redirect(url_for('diseno'))
 
 
 
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)
