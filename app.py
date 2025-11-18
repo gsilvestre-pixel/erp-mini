@@ -71,7 +71,7 @@ def agregar():
 def exportar():
     conn = sqlite3.connect(DB_NAME)
     c = conn.cursor()
-    c.execute("SELECT * FROM trabajadores")
+    c.execute("SELECT * FROM trabajadores ORDER BY nombre")
     trabajadores = c.fetchall()
     conn.close()
 
